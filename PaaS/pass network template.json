@@ -1,0 +1,209 @@
+    {
+        "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+        "contentVersion": "1.0.0.0",
+        "parameters": {
+            "Customer Name": {
+                "type": "string",
+                "metadata": {
+                    "description": "Customer Name"
+                }
+            },
+            "Customer VNET Address CIDR": {
+                "type": "string",
+                "metadata": {
+                    "description": "Customer VNET Address Space"
+                }
+            },
+            "Customer PaaS Subnet CIDR": {
+                "type": "string",
+                "metadata": {
+                    "description": "IPv4 address range for the Customer Subnet"
+                }
+            },
+            "Customer IP Addresses": { 
+                "type": "string",
+                "metadata": {
+                    "description": "Customer IP Addresses to allow connection to the PaaS Service (IP Adresses should be seperated with ',' for example 192.168.1.1,192.123.23.23)"
+                }
+            }
+        },
+        "variables": {
+            "VNET Peering Name Customer to Management": "[concat(parameters('Customer Name'), 'ToManagement')]",
+            "VNET Peering Name Management to Customer": "[concat('ManagementTo', parameters('Customer Name'))]",
+            "Customer Subnet Name": "subnet1",
+            "Management VNET Name": "Management-PaaS-VNET",
+            "Customer NSG Name": "[concat(parameters('Customer Name'), '-NSG')]",
+            "Customer VNET Name": "[concat(parameters('Customer Name'), '-VNET')]",
+            "Management VNET Resource ID": "/subscriptions/1ce861ac-b63a-421d-a35e-06c60d32dff7/resourceGroups/Managemnt-PaaS-RG/providers/Microsoft.Network/virtualNetworks/Management-PaaS-VNET"
+        },
+        "resources": [
+            {
+                "comments": "Customer NSG",
+                "type": "Microsoft.Network/networkSecurityGroups", 
+                "name": "[variables('Customer NSG Name')]",
+                "apiVersion": "2018-02-01",
+                "location": "[resourceGroup().location]",
+                "properties": {
+                    "securityRules": [
+                        {
+                            "name": "AllowCustomerAccess",
+                            "properties": {
+                                "protocol": "TCP",
+                                "sourcePortRange": "*",
+                                "sourceAddressPrefix": "",
+                                "destinationPortRange": "",
+                                "destinationAddressPrefix": "*",
+                                "access": "Allow",
+                                "priority": 100,
+                                "direction": "Inbound",
+                                "sourcePortRanges": [],
+                                "destinationPortRanges": [
+                                    "80",
+                                    "443",
+                                    "5672",
+                                    "5671"
+                                ],
+                                "sourceAddressPrefixes": 
+                                    "[split(parameters('Customer IP Addresses'), ',')]"
+                                ,
+                                "destinationAddressPrefixes": [
+                                ]
+                            }
+                        }
+                    ],
+                    "defaultSecurityRules": [
+                        {
+                            "name": "DenyAllInBound",
+                            "properties": {
+                                "provisioningState": "Succeeded",
+                                "description": "Deny all inbound traffic",
+                                "protocol": "*",
+                                "sourcePortRange": "*",
+                                "destinationPortRange": "*",
+                                "sourceAddressPrefix": "*",
+                                "destinationAddressPrefix": "*",
+                                "access": "Deny",
+                                "priority": 65500,
+                                "direction": "Inbound",
+                                "sourcePortRanges": [],
+                                "destinationPortRanges": [],
+                                "sourceAddressPrefixes": [],
+                                "destinationAddressPrefixes": []
+                            }
+                        },
+                        {
+                            "name": "DenyAllOutBound",
+                            "properties": {
+                                "description": "Deny all outbound traffic",
+                                "protocol": "*",
+                                "sourcePortRange": "*",
+                                "destinationPortRange": "*",
+                                "sourceAddressPrefix": "*",
+                                "destinationAddressPrefix": "*",
+                                "access": "Deny",
+                                "priority": 65500,
+                                "direction": "Outbound",
+                                "sourcePortRanges": [],
+                                "destinationPortRanges": [],
+                                "sourceAddressPrefixes": [],
+                                "destinationAddressPrefixes": []
+                            }
+                        }
+                    ]
+                },
+                "dependsOn": []
+            },
+            {
+                "type": "Microsoft.Network/virtualNetworks",
+                "name": "[variables('Customer VNET Name')]",
+                "apiVersion": "2018-02-01",
+                "location": "[resourceGroup().location]",
+                "properties": {
+                    "addressSpace": {
+                        "addressPrefixes": [
+                            "[parameters('Customer VNET Address CIDR')]"
+                        ]
+                    },
+                    "virtualNetworkPeerings": [],
+                    "enableDdosProtection": false,
+                    "enableVmProtection": false
+                },
+                "dependsOn": [
+                    "[resourceId('Microsoft.Network/networkSecurityGroups', variables('Customer NSG Name'))]"
+                ]
+            },
+            {
+                "type": "Microsoft.Network/virtualNetworks/subnets",
+                "name": "[concat(variables('Customer VNET Name'), '/', variables('Customer Subnet Name'))]",
+                "apiVersion": "2018-02-01",
+                "properties": {
+                    "addressPrefix": "[parameters('Customer PaaS Subnet CIDR')]",
+                    "networkSecurityGroup": {
+                        "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('Customer NSG Name'))]"
+                    },
+                    "serviceEndpoints": []
+                },
+                "dependsOn": [
+                    "[resourceId('Microsoft.Network/virtualNetworks', variables('Customer VNET Name'))]",
+                    "[resourceId('Microsoft.Network/networkSecurityGroups', variables('Customer NSG Name'))]"
+                ]
+            },
+            {
+                "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+                "name": "[concat(variables('Customer VNET Name'), '/', variables('VNET Peering Name Customer to Management'))]",
+                "apiVersion": "2018-02-01",
+                "properties": {
+                    "remoteVirtualNetwork": {
+                        "id": "[variables('Management VNET Resource ID')]"
+                    },
+                    "allowVirtualNetworkAccess": true,
+                    "allowForwardedTraffic": false,
+                    "allowGatewayTransit": false,
+                    "useRemoteGateways": true
+                },
+                "dependsOn": [
+                    "[resourceId('Microsoft.Network/virtualNetworks', variables('Customer VNET Name'))]",
+                    "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('Customer VNET Name'), variables('Customer Subnet Name'))]"
+                ],
+                "comments": "This is the peering from Customer VNET to Management VNET"
+            },
+            {
+                "apiVersion": "2017-05-10",
+                "name": "nestedTemplate",
+                "dependsOn": [
+                    "[resourceId('Microsoft.Network/virtualNetworks', variables('Customer VNET Name'))]",
+                    "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('Customer VNET Name'), variables('Customer Subnet Name'))]"
+                ],
+                "type": "Microsoft.Resources/deployments",
+                "resourceGroup": "Managemnt-PaaS-RG",
+                "properties": {
+                    "mode": "Incremental",
+                    "template": {
+                        "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                        "contentVersion": "1.0.0.0",
+                        "parameters": {},
+                        "variables": {},
+                        "resources": [
+                            {
+                                "apiVersion": "2018-02-01",
+                                "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+                                "name": "[concat(variables('Management VNET Name'), '/', variables('VNET Peering Name Management to Customer'))]",
+                                "location": "[resourceGroup().location]",
+                                "comments": "This is the peering from Management VNET to Customer VNET",
+                                "properties": {
+                                    "allowVirtualNetworkAccess": "true",
+                                    "allowForwardedTraffic": "true",
+                                    "allowGatewayTransit": "true",
+                                    "useRemoteGateways": "false",
+                                    "remoteVirtualNetwork": {
+                                        "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('Customer VNET Name'))]"
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "parameters": {}
+                }
+            }
+        ]
+    }
