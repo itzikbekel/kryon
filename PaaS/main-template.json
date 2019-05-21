@@ -1,0 +1,109 @@
+{
+    "$schema": "http://schema-management-azure-com.o365.apps.cyberark.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "Customer Name": {
+            "type": "string",
+            "metadata": {
+                "description": "Customer Name"
+            }
+        },
+        "Customer VNET Address CIDR": {
+            "type": "string",
+            "metadata": {
+                "description": "Customer VNET Address Space"
+            }
+        },
+        "Customer PaaS Subnet CIDR": {
+            "type": "string",
+            "metadata": {
+                "description": "IPv4 address range for the Customer Subnet"
+            }
+        },
+        "Customer IP Addresses": {
+            "type": "string",
+            "metadata": {
+                "description": "Customer IP Addresses to allow connection to the PaaS Service (IP Adresses should be seperated with ',' for example 192.168.1.1,192.123.23.23)"
+            }
+        },
+        "vmSize": {
+            "type": "string",
+            "allowedValues": [
+                "",
+                "",
+                "",
+                ""
+            ]
+        },
+        "Imageid": {
+            "type": "string",
+            "metadata": {
+                "description": "Image ID of the PaaS VM"
+            }
+        }
+    },
+    "variables": {
+        "VMname": "",
+        "adminUsername": "kryonazure",
+        "virtualNetworkName": "",
+        "subnetName": "subnet1",
+        "Customer VNET Name": "[concat(parameters('Customer Name'), '-VNET')]"
+
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Resources/deployments",
+            "name": "linkedTemplate",
+            "apiVersion": "2017-05-10",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "https://raw.githubusercontent.com/itzikbekel/kryon/master/PaaS/pass-vm-template.json",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "Customer Name": {
+                        "value": "[parameters('Customer Name')]"
+                    },
+                    "Customer VNET Address CIDR": {
+                        "value": "[parameters('Customer VNET Address CIDR')]"
+                    },
+                    "Customer PaaS Subnet CIDR": {
+                        "value": "[parameters('Customer PaaS Subnet CIDR')]"
+                    },
+                    "Customer IP Addresses": {
+                        "value": "[parameters('Customer IP Addresses')]"
+                    }
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "name": "linkedTemplate1",
+            "dependsOn": ["linkedTemplate"],
+            "apiVersion": "2017-05-10",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "https://raw.githubusercontent.com/itzikbekel/kryon/master/PaaS/pass-network-template.json",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "Customer Name": {
+                        "value": "[parameters('Customer Name')]"
+                    },
+                    "Customer VNET Address CIDR": {
+                        "value": "[parameters('Customer VNET Address CIDR')]"
+                    },
+                    "Customer PaaS Subnet CIDR": {
+                        "value": "[parameters('Customer PaaS Subnet CIDR')]"
+                    },
+                    "Customer IP Addresses": {
+                        "value": "[parameters('Customer IP Addresses')]"
+                    }
+                }
+            }
+        }
+    ],
+    "outputs": {}
+}
