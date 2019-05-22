@@ -31,8 +31,7 @@
             "allowedValues": [
                 "",
                 "",
-                "",
-                ""
+                ""            
             ]
         },
         "Imageid": {
@@ -40,16 +39,15 @@
             "metadata": {
                 "description": "Image ID of the PaaS VM"
             }
-        },
-        "adminPassword": {
-            "type": "securestring"
         }
     },
     "variables": {
-        "VMname": "[concat(parameters('Customer Name'), '-VM')]",
+        "VMname": "",
         "adminUsername": "kryonazure",
+        "virtualNetworkName": "",
         "subnetName": "subnet1",
         "Customer VNET Name": "[concat(parameters('Customer Name'), '-VNET')]"
+
     },
     "resources": [
         {
@@ -81,9 +79,7 @@
         {
             "type": "Microsoft.Resources/deployments",
             "name": "linkedTemplate1",
-            "dependsOn": [
-                "linkedTemplate"
-            ],
+            "dependsOn": ["linkedTemplate"],
             "apiVersion": "2017-05-10",
             "properties": {
                 "mode": "Incremental",

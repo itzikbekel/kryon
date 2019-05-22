@@ -9,7 +9,7 @@
             "type": "string"
         },
         "adminPassword": {
-            "type": "SecureString"
+            "type": "securestring"
         },
         "vmSize": {
             "type": "string"
@@ -17,7 +17,7 @@
         "Imageid": {
             "type": "string"
         },
-        "virtualNetworkName": {
+        "Customer VNET Name": {
             "type": "string"
         },
         "subnetName": {
@@ -28,7 +28,7 @@
     "variables": {
         "nicName": "[concat(parameters('vmName'),'-nic')]",
         "publicIPAddressName": "[concat(parameters('vmName'),'-pip')]",
-        "subnetId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('subnetName'))]"
+        "subnetId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('Customer VNET Name'), parameters('subnetName'))]"
     },
     "resources": [
         {
