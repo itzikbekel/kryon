@@ -123,28 +123,6 @@
                 },
                 "diskSizeGB": 300
             }
-        },
-        {
-            "apiVersion": "2018-06-01",
-            "type": "Microsoft.Compute/virtualMachines/extensions",
-            "name": "configapp",
-            "location": "[resourceGroup().location]",
-            "dependsOn": [
-                "[concat('Microsoft.Compute/virtualMachines/', parameters('vmName'))]"
-            ],
-            "properties": {
-                "publisher": "Microsoft.Compute",
-                "type": "CustomScriptExtension",
-                "typeHandlerVersion": "1.9",
-                "autoUpgradeMinorVersion": true,
-                "settings": {
-                    "fileUris": [
-                    ]
-                },
-                "protectedSettings": {
-                    "commandToExecute": ""
-                }
-            }
         }
     ]
 }
