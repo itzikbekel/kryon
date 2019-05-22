@@ -141,7 +141,7 @@
                     "fileUris": []
                 },
                 "protectedSettings": {
-					"commandToExecute": ""
+					"commandToExecute": "echo 'Hello World!'"
                 }
             },
             "dependsOn": [
