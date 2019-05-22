@@ -112,7 +112,7 @@
         {
             "type": "Microsoft.Compute/disks",
             "apiVersion": "2018-06-01",
-            "name": "[concat(parametres('vmName'),'-datadisk1')]",
+            "name": "[concat(parameters('vmName'),'-datadisk1')]",
             "location": "[resourceGroup().location]",
             "sku": {
                 "name": "Standard_LRS"
