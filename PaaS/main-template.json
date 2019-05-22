@@ -34,12 +34,12 @@
         },
         "vmSize": {
             "type": "string",
-            "defaultValue": "Standars_F8S_v2",
+            "defaultValue": "Standard_F8S_v2",
             "allowedValues": [
-                "Standars_F8S_v2",
-                "Standars_F16S_v2",
-                "Standars_F32S_v2",
-                "Standars_F64S_v2"
+                "Standard_F8S_v2",
+                "Standard_F16S_v2",
+                "Standard_F32S_v2",
+                "Standard_F64S_v2"
             ]
         },
         "adminPassword": {
@@ -59,7 +59,7 @@
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "https://raw.githubusercontent.com/itzikbekel/kryon/master/PaaS/pass-vm-template.json",
+                    "uri": "https://raw.githubusercontent.com/itzikbekel/kryon/master/PaaS/pass-network-template.json",
                     "contentVersion": "1.0.0.0"
                 },
                 "parameters": {
