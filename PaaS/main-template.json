@@ -26,20 +26,21 @@
                 "description": "Customer IP Addresses to allow connection to the PaaS Service (IP Adresses should be seperated with ',' for example 192.168.1.1,192.123.23.23)"
             }
         },
-        "vmSize": {
-            "type": "string",
-            "allowedValues": [
-                "",
-                "",
-                "",
-                ""
-            ]
-        },
         "Imageid": {
             "type": "string",
             "metadata": {
                 "description": "Image ID of the PaaS VM"
             }
+        },
+        "vmSize": {
+            "type": "string",
+            "defaultValue": "Standars_F8S_v2",
+            "allowedValues": [
+                "Standars_F8S_v2",
+                "Standars_F16S_v2",
+                "Standars_F32S_v2",
+                "Standars_F64S_v2"
+            ]
         },
         "adminPassword": {
             "type": "securestring"
@@ -48,7 +49,6 @@
     "variables": {
         "VMname": "[concat(parameters('Customer Name'), '-VM')]",
         "adminUsername": "kryonazure",
-        "subnetName": "subnet1",
         "Customer VNET Name": "[concat(parameters('Customer Name'), '-VNET')]"
     },
     "resources": [
@@ -88,21 +88,27 @@
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "https://raw.githubusercontent.com/itzikbekel/kryon/master/PaaS/pass-network-template.json",
+                    "uri": "https://raw.githubusercontent.com/itzikbekel/kryon/master/PaaS/pass-vm-template.json",
                     "contentVersion": "1.0.0.0"
                 },
                 "parameters": {
-                    "Customer Name": {
-                        "value": "[parameters('Customer Name')]"
+                    "VMname": {
+                        "value": "[variables('VMname')]"
                     },
-                    "Customer VNET Address CIDR": {
-                        "value": "[parameters('Customer VNET Address CIDR')]"
+                    "adminUsername": {
+                        "value": "[variables('adminUsername')]"
                     },
-                    "Customer PaaS Subnet CIDR": {
-                        "value": "[parameters('Customer PaaS Subnet CIDR')]"
+                    "adminPassword": {
+                        "value": "[parameters('adminPassword')]"
                     },
-                    "Customer IP Addresses": {
-                        "value": "[parameters('Customer IP Addresses')]"
+                    "vmSize": {
+                        "value": "[parameters('vmSize')]"
+                    },
+                    "Imageid": {
+                        "value": "[parameters('Imageid')]"
+                    },
+                    "Customer VNET Name": {
+                        "value": "[variables('Customer VNET Name')]"
                     }
                 }
             }

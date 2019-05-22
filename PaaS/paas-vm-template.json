@@ -19,16 +19,12 @@
         },
         "Customer VNET Name": {
             "type": "string"
-        },
-        "subnetName": {
-            "type": "string",
-            "defaultValue": "subnet1"
         }
     },
     "variables": {
         "nicName": "[concat(parameters('vmName'),'-nic')]",
         "publicIPAddressName": "[concat(parameters('vmName'),'-pip')]",
-        "subnetId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('Customer VNET Name'), parameters('subnetName'))]"
+        "subnetId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('Customer VNET Name'), 'subnet1')]"
     },
     "resources": [
         {
